@@ -43,11 +43,21 @@ let UserService = exports.UserService = class UserService {
         const salt = await bcrypt.genSalt();
         user.password = await bcrypt.hash(createUserDto.password, salt);
         try {
-            return await this.userRepository.save(user);
+            await this.userRepository.save(user);
+            const { password, ...result } = createUserDto;
+            return result;
         }
         catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new common_1.ConflictException('Email already in use');
+                if (error.sqlMessage.includes(user.username)) {
+                    throw new common_1.ConflictException('Username already in use');
+                }
+                else if (error.sqlMessage.includes(user.email)) {
+                    throw new common_1.ConflictException('Email already in use');
+                }
+                else {
+                    throw new common_1.ConflictException('Duplicate entry');
+                }
             }
             else {
                 throw new common_1.BadRequestException('Undefined error');

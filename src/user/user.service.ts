@@ -29,7 +29,7 @@ export class UserService {
     }
 
     // SIGN UP
-    async create(createUserDto: CreateUserDto): Promise<User> {
+    async create(createUserDto: CreateUserDto): Promise<any> {
         const user = new User();
         user.username = createUserDto.username;
         user.email = createUserDto.email;
@@ -38,11 +38,19 @@ export class UserService {
         user.password = await bcrypt.hash(createUserDto.password, salt);
 
         try {
-            return await this.userRepository.save(user);
+            await this.userRepository.save(user);
+            const { password, ...result } = createUserDto;  // Excluyendo password del DTO
+            return result;
         } catch (error) {
             // EL RESTO DE ERRORES SE MANEJAN DESDE EL DTO "./dto/create-user.dto"
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictException('Email already in use');
+                if (error.sqlMessage.includes(user.username)) {
+                    throw new ConflictException('Username already in use');
+                } else if (error.sqlMessage.includes(user.email)) {
+                    throw new ConflictException('Email already in use');
+                } else {
+                    throw new ConflictException('Duplicate entry');
+                }
             } else {
                 throw new BadRequestException('Undefined error');
             }
