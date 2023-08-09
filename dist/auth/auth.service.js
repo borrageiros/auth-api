@@ -30,7 +30,7 @@ let AuthService = exports.AuthService = class AuthService {
     async login(username, password) {
         const user = await this.validateUser(username, password);
         if (!user) {
-            throw new common_1.UnauthorizedException('Incorrect password');
+            throw new common_1.UnauthorizedException(['Incorrect password']);
         }
         const payload = { username: user.username, sub: user.id };
         return {

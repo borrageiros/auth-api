@@ -50,17 +50,17 @@ let UserService = exports.UserService = class UserService {
         catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
                 if (error.sqlMessage.includes(user.username)) {
-                    throw new common_1.ConflictException('Username already in use');
+                    throw new common_1.ConflictException(['Username already in use']);
                 }
                 else if (error.sqlMessage.includes(user.email)) {
-                    throw new common_1.ConflictException('Email already in use');
+                    throw new common_1.ConflictException(['Email already in use']);
                 }
                 else {
-                    throw new common_1.ConflictException('Duplicate entry');
+                    throw new common_1.ConflictException(['Duplicate entry']);
                 }
             }
             else {
-                throw new common_1.BadRequestException('Undefined error');
+                throw new common_1.BadRequestException(['Undefined error']);
             }
         }
     }

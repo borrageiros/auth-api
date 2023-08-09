@@ -23,7 +23,7 @@ export class AuthService {
     async login(username: string, password: string) {
         const user = await this.validateUser(username, password);
         if (!user) {
-            throw new UnauthorizedException('Incorrect password');
+            throw new UnauthorizedException(['Incorrect password']);
         }
         const payload = { username: user.username, sub: user.id };
         return {

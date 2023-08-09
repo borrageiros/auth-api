@@ -45,14 +45,14 @@ export class UserService {
             // EL RESTO DE ERRORES SE MANEJAN DESDE EL DTO "./dto/create-user.dto"
             if (error.code === 'ER_DUP_ENTRY') {
                 if (error.sqlMessage.includes(user.username)) {
-                    throw new ConflictException('Username already in use');
+                    throw new ConflictException(['Username already in use']);
                 } else if (error.sqlMessage.includes(user.email)) {
-                    throw new ConflictException('Email already in use');
+                    throw new ConflictException(['Email already in use']);
                 } else {
-                    throw new ConflictException('Duplicate entry');
+                    throw new ConflictException(['Duplicate entry']);
                 }
             } else {
-                throw new BadRequestException('Undefined error');
+                throw new BadRequestException(['Undefined error']);
             }
         }
     }
