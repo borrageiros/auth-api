@@ -1,7 +1,7 @@
 // src/user/user.service.ts
 import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -28,12 +28,36 @@ export class UserService {
         return user;
     }
 
+    async findUsersByUsername(username: string): Promise<any> {
+        const users = await this.userRepository.find({ 
+            where: { 
+                username: Like(`%${username}%`) 
+            } 
+        });
+        if (users.length === 0) {
+            throw new NotFoundException(`No users found with username containing "${username}"`);
+        }
+        return {users: users.map(user => user.username) };
+    }
+
     async findOneByEmail(email: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { email } });
         if (!user) {
           throw new NotFoundException(`No user found with email ${email}`);
         }
         return user;
+    }
+
+    async findUsersByEmail(email: string): Promise<any> {
+        const users = await this.userRepository.find({ 
+            where: { 
+                email: Like(`%${email}%`) 
+            } 
+        });
+        if (users.length === 0) {
+            throw new NotFoundException(`No users found with email containing "${email}"`);
+        }
+        return {users: users.map(user => user.username) };
     }
 
     async changeUsernameConnectedUser(connectedUserId: number, newUsername: string): Promise<User> {

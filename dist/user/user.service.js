@@ -36,12 +36,34 @@ let UserService = exports.UserService = class UserService {
         }
         return user;
     }
+    async findUsersByUsername(username) {
+        const users = await this.userRepository.find({
+            where: {
+                username: (0, typeorm_2.Like)(`%${username}%`)
+            }
+        });
+        if (users.length === 0) {
+            throw new common_1.NotFoundException(`No users found with username containing "${username}"`);
+        }
+        return { users: users.map(user => user.username) };
+    }
     async findOneByEmail(email) {
         const user = await this.userRepository.findOne({ where: { email } });
         if (!user) {
             throw new common_1.NotFoundException(`No user found with email ${email}`);
         }
         return user;
+    }
+    async findUsersByEmail(email) {
+        const users = await this.userRepository.find({
+            where: {
+                email: (0, typeorm_2.Like)(`%${email}%`)
+            }
+        });
+        if (users.length === 0) {
+            throw new common_1.NotFoundException(`No users found with email containing "${email}"`);
+        }
+        return { users: users.map(user => user.username) };
     }
     async changeUsernameConnectedUser(connectedUserId, newUsername) {
         const user = await this.userRepository.findOne({ where: { id: connectedUserId } });

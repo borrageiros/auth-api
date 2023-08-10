@@ -1,11 +1,15 @@
 // src/user/user.controller.ts
-import { Body, Controller, Post, UseGuards, Request, BadRequestException, UnauthorizedException, Res, HttpStatus, ConflictException } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Request, BadRequestException, UnauthorizedException, Res, HttpStatus, ConflictException, Get, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { AuthService } from 'src/auth/auth.service';
+import { plainToClass } from 'class-transformer';
+import { PublicUserInfo } from './dto/public-user-info.dto';
 
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth()
 @ApiTags('Users')
 @Controller('/users')
 export class UserController {
@@ -16,9 +20,80 @@ export class UserController {
 
 
 
+    //////////////////////// GET ONE USER (PUBLIC INFO)
+    @Get()
+    @ApiOperation({ summary: 'Get a specific user by username (Public Info)' })
+    @ApiResponse({ status: 200, description: 'User public info (Object)' })
+    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Not found' })
+    async getUserByUsername(@Query('username') username: string, @Res() res) {
+        try{
+            const user = await this.userService.findOneByUsername(username);
+            return res.status(HttpStatus.OK).send(plainToClass(PublicUserInfo, user));  // Excluyendo datos privados del objeto User
+        }catch (error){
+            return res.status(HttpStatus.NOT_FOUND).send({ message: error.message });
+        }
+    }
+    ////////////////////////
+
+
+
+    //////////////////////// GET USER PROFILE FOR CONNECTED USER (PRIVATE INFO)
+    @Get("/profile")
+    @ApiOperation({ summary: 'Get user profile by connected user (Private/All Info)' })
+    @ApiResponse({ status: 200, description: 'User all info (Object)' })
+    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    async getUserByToken( @Res() res, @Request() req ) {
+        const connectedUser = await this.userService.findUserById(req.user.id);
+        return res.status(HttpStatus.OK).send(connectedUser);
+    }
+    ////////////////////////
+
+
+
+    //////////////////////// GET USERS
+    @Get('/search')
+    @ApiOperation({ summary: 'Get users by username or email, case insensitive and use the function LIKE from mysql ' })
+    @ApiOkResponse({
+        description: 'List of usernames matching the search term',
+        schema: {
+            type: 'object',
+            properties: {
+                users: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    },
+                    example: ["user1", "user2", "user3"]
+                }
+            }
+        }
+    })
+    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Not found' })
+    async searchUsersByUsername(@Query('username') username: string, @Res() res) {
+        let users = []
+        try{
+            users = await this.userService.findUsersByEmail(username);
+            return res.status(HttpStatus.OK).send(users);
+        }catch {
+            try {
+                users = await this.userService.findUsersByUsername(username);
+            } catch (error) {
+                return res.status(HttpStatus.NOT_FOUND).send({ message: error.message });
+            }
+            return res.status(HttpStatus.OK).send(users);
+        }
+
+    }
+    ////////////////////////
+
+
+
     //////////////////////// CHANGE USERNAME
-    @UseGuards(AuthGuard('jwt'))
-    @ApiBearerAuth()
     @Post('/change-username')
     @ApiOperation({ summary: 'Change username' })
     @ApiOkResponse({

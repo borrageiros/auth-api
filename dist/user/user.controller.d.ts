@@ -5,5 +5,8 @@ export declare class UserController {
     private userService;
     private authService;
     constructor(userService: UserService, authService: AuthService);
+    getUserByUsername(username: string, res: any): Promise<any>;
+    getUserByToken(res: any, req: any): Promise<any>;
+    searchUsersByUsername(username: string, res: any): Promise<any>;
     changeUsername(req: any, changeUsernameDto: ChangeUsernameDto, res: any): Promise<any>;
 }
