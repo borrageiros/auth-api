@@ -21,6 +21,7 @@ const change_username_dto_1 = require("./dto/change-username.dto");
 const auth_service_1 = require("../auth/auth.service");
 const class_transformer_1 = require("class-transformer");
 const public_user_info_dto_1 = require("./dto/public-user-info.dto");
+const change_email_dto_1 = require("./dto/change-email.dto");
 let UserController = exports.UserController = class UserController {
     constructor(userService, authService) {
         this.userService = userService;
@@ -71,6 +72,26 @@ let UserController = exports.UserController = class UserController {
         catch (error) {
             if (error.sqlMessage.includes(changeUsernameDto.newUsername)) {
                 throw new common_1.ConflictException(['Username already in use']);
+            }
+        }
+        return res.status(common_1.HttpStatus.OK).send({ message: ['Username changed successfully'] });
+    }
+    async changeEmail(req, changeEmailDto, res) {
+        const connectedUser = await this.userService.findUserById(req.user.id);
+        const newUsername = changeEmailDto.newEmail;
+        if (!newUsername) {
+            throw new common_1.BadRequestException(['A new email must be provided.']);
+        }
+        const token = await this.authService.validateUser(connectedUser.username, changeEmailDto.password);
+        if (!token) {
+            throw new common_1.UnauthorizedException(['Incorrect password']);
+        }
+        try {
+            await this.userService.changeEmailConnectedUser(connectedUser.id, changeEmailDto.newEmail);
+        }
+        catch (error) {
+            if (error.sqlMessage.includes(changeEmailDto.newEmail)) {
+                throw new common_1.ConflictException(['Email already in use']);
             }
         }
         return res.status(common_1.HttpStatus.OK).send({ message: ['Username changed successfully'] });
@@ -156,6 +177,34 @@ __decorate([
     __metadata("design:paramtypes", [Object, change_username_dto_1.ChangeUsernameDto, Object]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "changeUsername", null);
+__decorate([
+    (0, common_1.Post)('/change-email'),
+    (0, swagger_1.ApiOperation)({ summary: 'Change email' }),
+    (0, swagger_1.ApiOkResponse)({
+        description: 'Email changed successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                message: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        example: 'Email changed successfully'
+                    }
+                }
+            }
+        }
+    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 409, description: 'Conflict' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, change_email_dto_1.ChangeEmailDto, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "changeEmail", null);
 exports.UserController = UserController = __decorate([
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     (0, swagger_1.ApiBearerAuth)(),

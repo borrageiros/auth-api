@@ -7,6 +7,7 @@ import { ChangeUsernameDto } from './dto/change-username.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { plainToClass } from 'class-transformer';
 import { PublicUserInfo } from './dto/public-user-info.dto';
+import { ChangeEmailDto } from './dto/change-email.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
@@ -134,6 +135,56 @@ export class UserController {
         } catch (error) {
             if (error.sqlMessage.includes(changeUsernameDto.newUsername)) {
                 throw new ConflictException(['Username already in use']);
+            }
+        }
+
+        return res.status(HttpStatus.OK).send({ message: ['Username changed successfully'] });
+    }
+    ////////////////////////
+
+
+
+    //////////////////////// CHANGE EMAIL
+    @Post('/change-email')
+    @ApiOperation({ summary: 'Change email' })
+    @ApiOkResponse({
+        description: 'Email changed successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                message: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        example: 'Email changed successfully'
+                    }
+                }
+            }
+        }
+    })
+    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 409, description: 'Conflict' })
+    async changeEmail(@Request() req, @Body() changeEmailDto: ChangeEmailDto, @Res() res) {
+        const connectedUser = await this.userService.findUserById(req.user.id);
+
+        const newUsername = changeEmailDto.newEmail;
+        if (!newUsername) {
+            throw new BadRequestException(['A new email must be provided.']);
+        }
+
+        //Check password
+        const token = await this.authService.validateUser(connectedUser.username, changeEmailDto.password)
+        if (!token) {
+            throw new UnauthorizedException(['Incorrect password']);
+        }
+
+        // Check if email exist and change it
+        try {
+            await this.userService.changeEmailConnectedUser( connectedUser.id, changeEmailDto.newEmail );
+        } catch (error) {
+            if (error.sqlMessage.includes(changeEmailDto.newEmail)) {
+                throw new ConflictException(['Email already in use']);
             }
         }
 

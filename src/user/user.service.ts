@@ -67,6 +67,13 @@ export class UserService {
         return user;
     }
 
+    async changeEmailConnectedUser(connectedUserId: number, newEmail: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
+        user.email = newEmail;
+        await this.userRepository.save(user);
+        return user;
+    }
+
     // SIGN UP
     async create(createUserDto: CreateUserDto): Promise<any> {
         const user = new User();

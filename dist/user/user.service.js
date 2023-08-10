@@ -71,6 +71,12 @@ let UserService = exports.UserService = class UserService {
         await this.userRepository.save(user);
         return user;
     }
+    async changeEmailConnectedUser(connectedUserId, newEmail) {
+        const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
+        user.email = newEmail;
+        await this.userRepository.save(user);
+        return user;
+    }
     async create(createUserDto) {
         const user = new user_entity_1.User();
         user.username = createUserDto.username;
