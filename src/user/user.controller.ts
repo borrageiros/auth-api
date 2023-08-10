@@ -1,7 +1,7 @@
 // src/user/user.controller.ts
 import { Body, Controller, Post, UseGuards, Request, BadRequestException, UnauthorizedException, Res, HttpStatus, ConflictException, Get, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { AuthService } from 'src/auth/auth.service';
@@ -23,19 +23,25 @@ export class UserController {
 
     //////////////////////// GET ONE USER (PUBLIC INFO)
     @Get()
-    @ApiOperation({ summary: 'Get a specific user by username (Public Info)' })
-    @ApiResponse({ status: 200, description: 'User public info (Object)' })
+    @ApiOperation({ summary: 'Get a specific user by username or all users if no username provided (Public Info)' })
+    @ApiQuery({ name: 'username', required: false, description: 'The username to search for.' })
+    @ApiResponse({ status: 200, description: 'User public info (Object or Array)' })
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'Not found' })
-    async getUserByUsername(@Query('username') username: string, @Res() res) {
-        try{
-            const user = await this.userService.findOneByUsername(username);
-            return res.status(HttpStatus.OK).send(plainToClass(PublicUserInfo, user));  // Excluyendo datos privados del objeto User
-        }catch (error){
+    async getUserByUsername( @Res() res, @Query('username') username?: string ) {
+        try {
+            if (username) {
+                const user = await this.userService.findOneByUsername(username);
+                return res.status(HttpStatus.OK).send(plainToClass(PublicUserInfo, user));
+            } else {
+                const users = await this.userService.findAllUsers();
+                return res.status(HttpStatus.OK).send({users: plainToClass(PublicUserInfo, users)});
+            }
+        } catch (error) {
             return res.status(HttpStatus.NOT_FOUND).send({ message: error.message });
         }
-    }
+    }    
     ////////////////////////
 
 
