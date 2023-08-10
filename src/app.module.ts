@@ -22,8 +22,8 @@ import { UserModule } from './user/user.module';
             entities: [User],
             synchronize: true,
         }),
+        AuthModule,
         UserModule,
-        AuthModule
     ],
     controllers: [],
     providers: [],

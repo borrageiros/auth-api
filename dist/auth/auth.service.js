@@ -14,21 +14,28 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcrypt");
 const user_service_1 = require("../user/user.service");
+const user_entity_1 = require("../user/user.entity");
 let AuthService = exports.AuthService = class AuthService {
     constructor(userService, jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;
     }
-    async validateUser(username, password) {
-        const user = await this.userService.findOneByUsername(username);
+    async validateUser(usernameOrEmail, password) {
+        let user = new user_entity_1.User;
+        try {
+            user = await this.userService.findOneByUsername(usernameOrEmail);
+        }
+        catch {
+            user = await this.userService.findOneByEmail(usernameOrEmail);
+        }
         if (user && await bcrypt.compare(password, user.password)) {
             const { password, ...result } = user;
             return result;
         }
         return null;
     }
-    async login(username, password) {
-        const user = await this.validateUser(username, password);
+    async login(usernameOrEmail, password) {
+        const user = await this.validateUser(usernameOrEmail, password);
         if (!user) {
             throw new common_1.UnauthorizedException(['Incorrect password']);
         }

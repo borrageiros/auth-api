@@ -12,6 +12,14 @@ export class UserService {
         @InjectRepository(User) private userRepository: Repository<User>,
     ) { }
 
+    async findUserById(id: number): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+            throw new NotFoundException(`No user found with ID ${id}`);
+        }
+        return user;
+    }
+
     async findOneByUsername(username: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { username } });
         if (!user) {
@@ -25,6 +33,13 @@ export class UserService {
         if (!user) {
           throw new NotFoundException(`No user found with email ${email}`);
         }
+        return user;
+    }
+
+    async changeUsernameConnectedUser(connectedUserId: number, newUsername: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
+        user.username = newUsername;
+        await this.userRepository.save(user);
         return user;
     }
 

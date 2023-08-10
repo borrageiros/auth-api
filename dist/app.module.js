@@ -28,8 +28,8 @@ exports.AppModule = AppModule = __decorate([
                 entities: [user_entity_1.User],
                 synchronize: true,
             }),
+            auth_module_1.AuthModule,
             user_module_1.UserModule,
-            auth_module_1.AuthModule
         ],
         controllers: [],
         providers: [],

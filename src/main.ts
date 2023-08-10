@@ -18,10 +18,11 @@ async function bootstrap() {
     .setTitle('AUTH API')
     .setDescription('Basic user authorization api')
     .setVersion('1.0')
+    .addBearerAuth()
     // .addTag('tag')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+  SwaggerModule.setup('/swagger', app, document);
 
   await app.listen(process.env.PORT);
 }

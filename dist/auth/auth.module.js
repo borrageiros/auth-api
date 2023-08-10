@@ -18,7 +18,7 @@ let AuthModule = exports.AuthModule = class AuthModule {
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            user_module_1.UserModule,
+            (0, common_1.forwardRef)(() => user_module_1.UserModule),
             jwt_1.JwtModule.register({
                 secret: process.env.JWT_SECRET,
                 signOptions: { expiresIn: process.env.JWT_TOKEN_SESSION_EXPIRE },
@@ -26,6 +26,7 @@ exports.AuthModule = AuthModule = __decorate([
         ],
         providers: [jwt_strategy_1.JwtStrategy, auth_service_1.AuthService],
         controllers: [auth_controller_1.AuthController],
+        exports: [auth_service_1.AuthService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map
