@@ -48,10 +48,10 @@ let UserController = exports.UserController = class UserController {
         const connectedUser = await this.userService.findOneById(req.user.id);
         return res.status(common_1.HttpStatus.OK).send(connectedUser);
     }
-    async searchUsersByUsername(username, res) {
+    async searchUsersByUsername(res, username, email) {
         let users = [];
         try {
-            users = await this.userService.findUsersByEmail(username);
+            users = await this.userService.findUsersByEmail(email);
             return res.status(common_1.HttpStatus.OK).send(users);
         }
         catch {
@@ -183,10 +183,23 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Not found' }),
-    __param(0, (0, common_1.Query)('username')),
-    __param(1, (0, common_1.Res)()),
+    (0, swagger_1.ApiQuery)({
+        name: "username",
+        description: "",
+        type: String,
+        required: false
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: "email",
+        description: "",
+        type: String,
+        required: false
+    }),
+    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Query)('username')),
+    __param(2, (0, common_1.Query)('email')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "searchUsersByUsername", null);
 __decorate([

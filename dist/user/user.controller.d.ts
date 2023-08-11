@@ -9,7 +9,7 @@ export declare class UserController {
     constructor(userService: UserService, authService: AuthService);
     getUserByUsername(res: any, username?: string): Promise<any>;
     getUserByToken(res: any, req: any): Promise<any>;
-    searchUsersByUsername(username: string, res: any): Promise<any>;
+    searchUsersByUsername(res: any, username?: string, email?: string): Promise<any>;
     changeUsername(req: any, changeUsernameDto: ChangeUsernameDto, res: any): Promise<any>;
     changeEmail(req: any, changeEmailDto: ChangeEmailDto, res: any): Promise<any>;
     changeRole(req: any, changeRoleDto: ChangeRoleDto, res: any): Promise<any>;

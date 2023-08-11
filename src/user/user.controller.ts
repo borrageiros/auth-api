@@ -85,10 +85,22 @@ export class UserController {
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'Not found' })
-    async searchUsersByUsername(@Query('username') username: string, @Res() res) {
+    @ApiQuery({
+        name: "username",
+        description: "",
+        type: String,
+        required: false
+    })
+    @ApiQuery({
+        name: "email",
+        description: "",
+        type: String,
+        required: false
+    })
+    async searchUsersByUsername( @Res() res, @Query('username') username?: string, @Query('email') email?: string ) {
         let users = []
         try{
-            users = await this.userService.findUsersByEmail(username);
+            users = await this.userService.findUsersByEmail(email);
             return res.status(HttpStatus.OK).send(users);
         }catch {
             try {
