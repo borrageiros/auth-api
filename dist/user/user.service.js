@@ -22,7 +22,10 @@ let UserService = exports.UserService = class UserService {
     constructor(userRepository) {
         this.userRepository = userRepository;
     }
-    async findUserById(id) {
+    async findAllUsers() {
+        return this.userRepository.find();
+    }
+    async findOneById(id) {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
             throw new common_1.NotFoundException(`No user found with ID ${id}`);
@@ -74,6 +77,12 @@ let UserService = exports.UserService = class UserService {
     async changeEmailConnectedUser(connectedUserId, newEmail) {
         const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
         user.email = newEmail;
+        await this.userRepository.save(user);
+        return user;
+    }
+    async changeUserRole(userId, newRole) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        user.role = newRole;
         await this.userRepository.save(user);
         return user;
     }

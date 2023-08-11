@@ -9,18 +9,24 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PublicUserInfo = void 0;
+exports.ChangeRoleDto = void 0;
+const class_validator_1 = require("class-validator");
+const swagger_1 = require("@nestjs/swagger");
 const user_entity_1 = require("../user.entity");
-const class_transformer_1 = require("class-transformer");
-class PublicUserInfo extends user_entity_1.User {
+const validRoles = Object.values(user_entity_1.UserRole).join(', ');
+class ChangeRoleDto {
 }
-exports.PublicUserInfo = PublicUserInfo;
+exports.ChangeRoleDto = ChangeRoleDto;
 __decorate([
-    (0, class_transformer_1.Exclude)(),
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.MaxLength)(50),
     __metadata("design:type", String)
-], PublicUserInfo.prototype, "password", void 0);
+], ChangeRoleDto.prototype, "userOrIdToChange", void 0);
 __decorate([
-    (0, class_transformer_1.Exclude)(),
-    __metadata("design:type", Date)
-], PublicUserInfo.prototype, "updatedAt", void 0);
-//# sourceMappingURL=public-user-info.dto.js.map
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(user_entity_1.UserRole, { message: `newRole must be (${validRoles})` }),
+    __metadata("design:type", String)
+], ChangeRoleDto.prototype, "newRole", void 0);
+//# sourceMappingURL=change-role.dto.js.map

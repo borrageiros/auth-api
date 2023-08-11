@@ -3,7 +3,7 @@ import { Injectable, ConflictException, BadRequestException, NotFoundException }
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './user.entity';
+import { User, UserRole } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class UserService {
         return this.userRepository.find();
     }    
 
-    async findUserById(id: number): Promise<User> {
+    async findOneById(id: number): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
             throw new NotFoundException(`No user found with ID ${id}`);
@@ -74,6 +74,13 @@ export class UserService {
     async changeEmailConnectedUser(connectedUserId: number, newEmail: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
         user.email = newEmail;
+        await this.userRepository.save(user);
+        return user;
+    }
+
+    async changeUserRole(userId: number, newRole: UserRole): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        user.role = newRole;
         await this.userRepository.save(user);
         return user;
     }
