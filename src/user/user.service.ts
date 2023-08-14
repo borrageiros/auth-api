@@ -64,21 +64,21 @@ export class UserService {
         return {users: users.map(user => user.username) };
     }
 
-    async changeUsernameConnectedUser(connectedUserId: number, newUsername: string): Promise<User> {
-        const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
+    async changeUsername(userId: number, newUsername: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         user.username = newUsername;
         await this.userRepository.save(user);
         return user;
     }
 
-    async changeEmailConnectedUser(connectedUserId: number, newEmail: string): Promise<User> {
-        const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
+    async changeEmail(userId: number, newEmail: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         user.email = newEmail;
         await this.userRepository.save(user);
         return user;
     }
 
-    async changeUserRole(userId: number, newRole: UserRole): Promise<User> {
+    async changeRole(userId: number, newRole: UserRole): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         user.role = newRole;
         await this.userRepository.save(user);
@@ -96,8 +96,7 @@ export class UserService {
 
         try {
             await this.userRepository.save(user);
-            const { password, ...result } = createUserDto;  // Excluyendo password del DTO
-            return result;
+            return user;
         } catch (error) {
             // EL RESTO DE ERRORES SE MANEJAN DESDE EL DTO "./dto/create-user.dto"
             if (error.code === 'ER_DUP_ENTRY') {

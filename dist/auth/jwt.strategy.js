@@ -14,17 +14,21 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const auth_service_1 = require("./auth.service");
+const jwt_decode_1 = require("jwt-decode");
 let JwtStrategy = exports.JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy, 'jwt') {
     constructor(authService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET,
+            secretOrKey: process.env.JWT_SECRET_KEY,
         });
         this.authService = authService;
     }
     async validate(payload) {
-        return { userId: payload.sub, username: payload.username };
+        return { userId: payload.sub, username: payload.username, isPasswordReset: payload.isPasswordReset };
+    }
+    async decode(jwtToken) {
+        return (0, jwt_decode_1.default)(jwtToken);
     }
 };
 exports.JwtStrategy = JwtStrategy = __decorate([

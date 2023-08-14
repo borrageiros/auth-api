@@ -68,19 +68,19 @@ let UserService = exports.UserService = class UserService {
         }
         return { users: users.map(user => user.username) };
     }
-    async changeUsernameConnectedUser(connectedUserId, newUsername) {
-        const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
+    async changeUsername(userId, newUsername) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         user.username = newUsername;
         await this.userRepository.save(user);
         return user;
     }
-    async changeEmailConnectedUser(connectedUserId, newEmail) {
-        const user = await this.userRepository.findOne({ where: { id: connectedUserId } });
+    async changeEmail(userId, newEmail) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         user.email = newEmail;
         await this.userRepository.save(user);
         return user;
     }
-    async changeUserRole(userId, newRole) {
+    async changeRole(userId, newRole) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         user.role = newRole;
         await this.userRepository.save(user);
@@ -94,8 +94,7 @@ let UserService = exports.UserService = class UserService {
         user.password = await bcrypt.hash(createUserDto.password, salt);
         try {
             await this.userRepository.save(user);
-            const { password, ...result } = createUserDto;
-            return result;
+            return user;
         }
         catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {

@@ -10,8 +10,8 @@ export declare class UserService {
     findUsersByUsername(username: string): Promise<any>;
     findOneByEmail(email: string): Promise<User>;
     findUsersByEmail(email: string): Promise<any>;
-    changeUsernameConnectedUser(connectedUserId: number, newUsername: string): Promise<User>;
-    changeEmailConnectedUser(connectedUserId: number, newEmail: string): Promise<User>;
-    changeUserRole(userId: number, newRole: UserRole): Promise<User>;
+    changeUsername(userId: number, newUsername: string): Promise<User>;
+    changeEmail(userId: number, newEmail: string): Promise<User>;
+    changeRole(userId: number, newRole: UserRole): Promise<User>;
     create(createUserDto: CreateUserDto): Promise<any>;
 }

@@ -15,9 +15,9 @@ async function bootstrap() {
   }));
 
   const config = new DocumentBuilder()
-    .setTitle('AUTH API')
-    .setDescription('Basic user authorization api')
-    .setVersion('1.0')
+    .setTitle(process.env.APP_NAME)
+    .setDescription(process.env.APP_DESCRIPTION)
+    .setVersion(process.env.APP_VERSION)
     .addBearerAuth()
     // .addTag('tag')
     .build();

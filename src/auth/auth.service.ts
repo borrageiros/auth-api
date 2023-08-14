@@ -13,6 +13,18 @@ export class AuthService {
         private jwtService: JwtService,
     ) { }
 
+    generateResetToken(user: User): string {
+        const payload = {
+            sub: user.id,
+            username: user.username,
+            isPasswordReset: true 
+        };
+        
+        return this.jwtService.sign(payload, {
+            expiresIn: process.env.JWT_TOKEN_PASSWORD_RECOVERY_EXPIRE
+        });
+    }
+
     async validateUser(usernameOrEmail: string, password: string, @Res() res): Promise<any> {
         let user = new User;
         
@@ -37,7 +49,7 @@ export class AuthService {
 
     async login(usernameOrEmail: string, password: string, @Res() res) {
         const user = await this.validateUser(usernameOrEmail, password, res);
-        console.log(user)
+
         if (!user) {
             throw new UnauthorizedException(['Incorrect password']);
         }

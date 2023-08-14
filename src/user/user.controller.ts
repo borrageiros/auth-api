@@ -144,7 +144,7 @@ export class UserController {
 
         // Check if username exist and change it
         try {
-            await this.userService.changeUsernameConnectedUser( connectedUser.id, changeUsernameDto.newUsername );
+            await this.userService.changeUsername( connectedUser.id, changeUsernameDto.newUsername );
         } catch (error) {
             if (error.sqlMessage.includes(changeUsernameDto.newUsername)) {
                 throw new ConflictException(['Username already in use']);
@@ -190,7 +190,7 @@ export class UserController {
 
         // Check if email exist and change it
         try {
-            await this.userService.changeEmailConnectedUser( connectedUser.id, changeEmailDto.newEmail );
+            await this.userService.changeEmail( connectedUser.id, changeEmailDto.newEmail );
         } catch (error) {
             if (error.sqlMessage.includes(changeEmailDto.newEmail)) {
                 throw new ConflictException(['Email already in use']);
@@ -207,7 +207,7 @@ export class UserController {
     // "users" cannot change the role for anyone
     // "admin" can change the role for any user/admin except removing or giving the root role (super_admin)
     // "root" (super_admin) can change the role for any user/admin/root
-    @Patch('/change-role')
+    @Patch('/admin/change-role')
     @ApiTags('Admin')
     @ApiOperation({ summary: 'Change a user role' })
     @ApiOkResponse({
@@ -261,7 +261,7 @@ export class UserController {
                 return res.status(HttpStatus.FORBIDDEN).send({ message: ['You do not have permission to perform this action'] });
         }
     
-        await this.userService.changeUserRole(userToChange.id, changeRoleDto.newRole);
+        await this.userService.changeRole(userToChange.id, changeRoleDto.newRole);
         return res.status(HttpStatus.OK).send({ message: ['Role updated to ' + userToChange.role + ' for ' + userToChange.username] });
     }
     

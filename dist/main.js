@@ -13,9 +13,9 @@ async function bootstrap() {
         errorHttpStatusCode: 400,
     }));
     const config = new swagger_1.DocumentBuilder()
-        .setTitle('AUTH API')
-        .setDescription('Basic user authorization api')
-        .setVersion('1.0')
+        .setTitle(process.env.APP_NAME)
+        .setDescription(process.env.APP_DESCRIPTION)
+        .setVersion(process.env.APP_VERSION)
         .addBearerAuth()
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);

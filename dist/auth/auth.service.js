@@ -24,6 +24,16 @@ let AuthService = exports.AuthService = class AuthService {
         this.userService = userService;
         this.jwtService = jwtService;
     }
+    generateResetToken(user) {
+        const payload = {
+            sub: user.id,
+            username: user.username,
+            isPasswordReset: true
+        };
+        return this.jwtService.sign(payload, {
+            expiresIn: process.env.JWT_TOKEN_PASSWORD_RECOVERY_EXPIRE
+        });
+    }
     async validateUser(usernameOrEmail, password, res) {
         let user = new user_entity_1.User;
         if ((0, class_validator_1.isEmail)(usernameOrEmail)) {
@@ -42,7 +52,6 @@ let AuthService = exports.AuthService = class AuthService {
     }
     async login(usernameOrEmail, password, res) {
         const user = await this.validateUser(usernameOrEmail, password, res);
-        console.log(user);
         if (!user) {
             throw new common_1.UnauthorizedException(['Incorrect password']);
         }

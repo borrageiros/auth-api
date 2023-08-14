@@ -75,7 +75,7 @@ let UserController = exports.UserController = class UserController {
             throw new common_1.UnauthorizedException(['Incorrect password']);
         }
         try {
-            await this.userService.changeUsernameConnectedUser(connectedUser.id, changeUsernameDto.newUsername);
+            await this.userService.changeUsername(connectedUser.id, changeUsernameDto.newUsername);
         }
         catch (error) {
             if (error.sqlMessage.includes(changeUsernameDto.newUsername)) {
@@ -91,7 +91,7 @@ let UserController = exports.UserController = class UserController {
             throw new common_1.UnauthorizedException(['Incorrect password']);
         }
         try {
-            await this.userService.changeEmailConnectedUser(connectedUser.id, changeEmailDto.newEmail);
+            await this.userService.changeEmail(connectedUser.id, changeEmailDto.newEmail);
         }
         catch (error) {
             if (error.sqlMessage.includes(changeEmailDto.newEmail)) {
@@ -129,7 +129,7 @@ let UserController = exports.UserController = class UserController {
             case user_entity_1.UserRole.USER:
                 return res.status(common_1.HttpStatus.FORBIDDEN).send({ message: ['You do not have permission to perform this action'] });
         }
-        await this.userService.changeUserRole(userToChange.id, changeRoleDto.newRole);
+        await this.userService.changeRole(userToChange.id, changeRoleDto.newRole);
         return res.status(common_1.HttpStatus.OK).send({ message: ['Role updated to ' + userToChange.role + ' for ' + userToChange.username] });
     }
 };
@@ -251,7 +251,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "changeEmail", null);
 __decorate([
-    (0, common_1.Patch)('/change-role'),
+    (0, common_1.Patch)('/admin/change-role'),
     (0, swagger_1.ApiTags)('Admin'),
     (0, swagger_1.ApiOperation)({ summary: 'Change a user role' }),
     (0, swagger_1.ApiOkResponse)({

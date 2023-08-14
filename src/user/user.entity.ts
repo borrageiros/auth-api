@@ -1,3 +1,4 @@
+// src/user/user.entity.ts
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -13,6 +14,11 @@ export enum UserRole {
 } // Defines the possible roles a user can have (enum = enumerated)
 
 @Entity('users')
+
+////////////////// IMPORTANT ///////////////////
+// 
+// All the private Columns will be configured in src/user/dto/public-user-info.dto.ts
+//
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
