@@ -28,14 +28,14 @@ let UserService = exports.UserService = class UserService {
     async findOneById(id) {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
-            throw new common_1.NotFoundException(`No user found with ID ${id}`);
+            throw new common_1.NotFoundException([`No user found with ID ${id}`]);
         }
         return user;
     }
     async findOneByUsername(username) {
         const user = await this.userRepository.findOne({ where: { username } });
         if (!user) {
-            throw new common_1.NotFoundException(`No user found with username ${username}`);
+            throw new common_1.NotFoundException([`No user found with username ${username}`]);
         }
         return user;
     }
@@ -46,14 +46,14 @@ let UserService = exports.UserService = class UserService {
             }
         });
         if (users.length === 0) {
-            throw new common_1.NotFoundException(`No users found with username containing "${username}"`);
+            throw new common_1.NotFoundException([`No users found with username containing "${username}"`]);
         }
         return { users: users.map(user => user.username) };
     }
     async findOneByEmail(email) {
         const user = await this.userRepository.findOne({ where: { email } });
         if (!user) {
-            throw new common_1.NotFoundException(`No user found with email ${email}`);
+            throw new common_1.NotFoundException([`No user found with email ${email}`]);
         }
         return user;
     }
@@ -64,7 +64,7 @@ let UserService = exports.UserService = class UserService {
             }
         });
         if (users.length === 0) {
-            throw new common_1.NotFoundException(`No users found with email containing "${email}"`);
+            throw new common_1.NotFoundException([`No users found with email containing "${email}"`]);
         }
         return { users: users.map(user => user.username) };
     }

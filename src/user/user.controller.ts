@@ -26,7 +26,7 @@ export class UserController {
     @Get()
     @ApiTags('Users')
     @ApiOperation({ summary: 'Get a specific user by username or all users if no username provided (Public Info)' })
-    @ApiQuery({ name: 'username', required: false, description: 'The username to search for.' })
+    @ApiQuery({ name: "username", description: "The username to search for.", type: String, required: false})
     @ApiResponse({ status: 200, description: 'User public info (Object or Array)' })
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -85,18 +85,8 @@ export class UserController {
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     @ApiResponse({ status: 404, description: 'Not found' })
-    @ApiQuery({
-        name: "username",
-        description: "",
-        type: String,
-        required: false
-    })
-    @ApiQuery({
-        name: "email",
-        description: "",
-        type: String,
-        required: false
-    })
+    @ApiQuery({ name: "username", description: "The username to search for.", type: String, required: false})
+    @ApiQuery({ name: "email", description: "The email to search for.", type: String, required: false})
     async searchUsersByUsername( @Res() res, @Query('username') username?: string, @Query('email') email?: string ) {
         let users = []
         try{
@@ -147,8 +137,8 @@ export class UserController {
         }
 
         //Check password
-        const token = await this.authService.validateUser(connectedUser.username, changeUsernameDto.password)
-        if (!token) {
+        const user = await this.authService.validateUser(connectedUser.username, changeUsernameDto.password, res)
+        if (!user) {
             throw new UnauthorizedException(['Incorrect password']);
         }
 
@@ -193,8 +183,8 @@ export class UserController {
         const connectedUser = await this.userService.findOneById(req.user.id);
 
         //Check password
-        const token = await this.authService.validateUser(connectedUser.username, changeEmailDto.password)
-        if (!token) {
+        const user = await this.authService.validateUser(connectedUser.username, changeEmailDto.password, res)
+        if (!user) {
             throw new UnauthorizedException(['Incorrect password']);
         }
 

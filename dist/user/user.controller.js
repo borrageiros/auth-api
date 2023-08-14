@@ -70,8 +70,8 @@ let UserController = exports.UserController = class UserController {
         if (!newUsername) {
             throw new common_1.BadRequestException(['A new username must be provided.']);
         }
-        const token = await this.authService.validateUser(connectedUser.username, changeUsernameDto.password);
-        if (!token) {
+        const user = await this.authService.validateUser(connectedUser.username, changeUsernameDto.password, res);
+        if (!user) {
             throw new common_1.UnauthorizedException(['Incorrect password']);
         }
         try {
@@ -86,8 +86,8 @@ let UserController = exports.UserController = class UserController {
     }
     async changeEmail(req, changeEmailDto, res) {
         const connectedUser = await this.userService.findOneById(req.user.id);
-        const token = await this.authService.validateUser(connectedUser.username, changeEmailDto.password);
-        if (!token) {
+        const user = await this.authService.validateUser(connectedUser.username, changeEmailDto.password, res);
+        if (!user) {
             throw new common_1.UnauthorizedException(['Incorrect password']);
         }
         try {
@@ -137,7 +137,7 @@ __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiTags)('Users'),
     (0, swagger_1.ApiOperation)({ summary: 'Get a specific user by username or all users if no username provided (Public Info)' }),
-    (0, swagger_1.ApiQuery)({ name: 'username', required: false, description: 'The username to search for.' }),
+    (0, swagger_1.ApiQuery)({ name: "username", description: "The username to search for.", type: String, required: false }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User public info (Object or Array)' }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
@@ -183,18 +183,8 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Not found' }),
-    (0, swagger_1.ApiQuery)({
-        name: "username",
-        description: "",
-        type: String,
-        required: false
-    }),
-    (0, swagger_1.ApiQuery)({
-        name: "email",
-        description: "",
-        type: String,
-        required: false
-    }),
+    (0, swagger_1.ApiQuery)({ name: "username", description: "The username to search for.", type: String, required: false }),
+    (0, swagger_1.ApiQuery)({ name: "email", description: "The email to search for.", type: String, required: false }),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, common_1.Query)('username')),
     __param(2, (0, common_1.Query)('email')),

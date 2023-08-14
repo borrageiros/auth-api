@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
@@ -15,27 +18,31 @@ const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcrypt");
 const user_service_1 = require("../user/user.service");
 const user_entity_1 = require("../user/user.entity");
+const class_validator_1 = require("class-validator");
 let AuthService = exports.AuthService = class AuthService {
     constructor(userService, jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;
     }
-    async validateUser(usernameOrEmail, password) {
+    async validateUser(usernameOrEmail, password, res) {
         let user = new user_entity_1.User;
-        try {
-            user = await this.userService.findOneByUsername(usernameOrEmail);
-        }
-        catch {
+        if ((0, class_validator_1.isEmail)(usernameOrEmail)) {
             user = await this.userService.findOneByEmail(usernameOrEmail);
         }
+        else {
+            user = await this.userService.findOneByUsername(usernameOrEmail);
+        }
+        if (!user) {
+            return res.status(common_1.HttpStatus.NOT_FOUND).send({ message: ['User not found'] });
+        }
         if (user && await bcrypt.compare(password, user.password)) {
-            const { password, ...result } = user;
-            return result;
+            return user;
         }
         return null;
     }
-    async login(usernameOrEmail, password) {
-        const user = await this.validateUser(usernameOrEmail, password);
+    async login(usernameOrEmail, password, res) {
+        const user = await this.validateUser(usernameOrEmail, password, res);
+        console.log(user);
         if (!user) {
             throw new common_1.UnauthorizedException(['Incorrect password']);
         }
@@ -45,6 +52,18 @@ let AuthService = exports.AuthService = class AuthService {
         };
     }
 };
+__decorate([
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], AuthService.prototype, "validateUser", null);
+__decorate([
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], AuthService.prototype, "login", null);
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [user_service_1.UserService,

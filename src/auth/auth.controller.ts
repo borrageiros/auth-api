@@ -31,9 +31,9 @@ export class AuthController {
     })
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 409, description: 'Username or email conflict' })
-    async register(@Body() createUserDto: CreateUserDto): Promise<any> {
+    async register(@Body() createUserDto: CreateUserDto, @Res() res): Promise<any> {
         await this.userService.create(createUserDto);
-        return this.authService.login(createUserDto.username, createUserDto.password);
+        return this.authService.login(createUserDto.username, createUserDto.password, res);
     }
     ////////////////////////
 
@@ -57,7 +57,7 @@ export class AuthController {
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 404, description: 'No user found with username or email' })
     async login(@Body() loginUserDto: LoginUserDto, @Res() res) {
-        const result = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password);
+        const result = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password, res);
         return res.status(HttpStatus.OK).send(result);
     }
     ////////////////////////

@@ -19,7 +19,7 @@ export class UserService {
     async findOneById(id: number): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
-            throw new NotFoundException(`No user found with ID ${id}`);
+            throw new NotFoundException([`No user found with ID ${id}`]);
         }
         return user;
     }
@@ -27,7 +27,7 @@ export class UserService {
     async findOneByUsername(username: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { username } });
         if (!user) {
-          throw new NotFoundException(`No user found with username ${username}`);
+          throw new NotFoundException([`No user found with username ${username}`]);
         }
         return user;
     }
@@ -39,7 +39,7 @@ export class UserService {
             } 
         });
         if (users.length === 0) {
-            throw new NotFoundException(`No users found with username containing "${username}"`);
+            throw new NotFoundException([`No users found with username containing "${username}"`]);
         }
         return {users: users.map(user => user.username) };
     }
@@ -47,7 +47,7 @@ export class UserService {
     async findOneByEmail(email: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { email } });
         if (!user) {
-          throw new NotFoundException(`No user found with email ${email}`);
+          throw new NotFoundException([`No user found with email ${email}`]);
         }
         return user;
     }
@@ -59,7 +59,7 @@ export class UserService {
             } 
         });
         if (users.length === 0) {
-            throw new NotFoundException(`No users found with email containing "${email}"`);
+            throw new NotFoundException([`No users found with email containing "${email}"`]);
         }
         return {users: users.map(user => user.username) };
     }

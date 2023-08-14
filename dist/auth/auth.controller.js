@@ -24,12 +24,12 @@ let AuthController = exports.AuthController = class AuthController {
         this.authService = authService;
         this.userService = userService;
     }
-    async register(createUserDto) {
+    async register(createUserDto, res) {
         await this.userService.create(createUserDto);
-        return this.authService.login(createUserDto.username, createUserDto.password);
+        return this.authService.login(createUserDto.username, createUserDto.password, res);
     }
     async login(loginUserDto, res) {
-        const result = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password);
+        const result = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password, res);
         return res.status(common_1.HttpStatus.OK).send(result);
     }
 };
@@ -51,8 +51,9 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 409, description: 'Username or email conflict' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
+    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([
