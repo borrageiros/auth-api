@@ -1,17 +1,17 @@
 // src/user/user.controller.ts
 import { Body, Controller, Post, UseGuards, Request, BadRequestException, UnauthorizedException, Res, HttpStatus, ConflictException, Get, Query, ForbiddenException, Patch, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User, UserRole } from './user.entity';
-import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiQuery, ApiParam, ApiBody } from '@nestjs/swagger';
+import { User, UserRole, PublicUserInfo } from './user.entity';
+import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ChangeUsernameDto } from './dto/change-username.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { plainToClass } from 'class-transformer';
-import { PublicUserInfo } from './dto/public-user-info.dto';
 import { ChangeEmailDto } from './dto/change-email.dto';
 import { ChangeRoleDto } from './dto/change-role.dto';
+import { ActiveUserGuard } from './active-user-guard';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), ActiveUserGuard) // Check JwtToken (auth) and check if the user is activated
 @ApiBearerAuth()
 @Controller('/users')
 export class UserController {

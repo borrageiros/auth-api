@@ -23,4 +23,8 @@ __decorate([
     (0, class_transformer_1.Exclude)(),
     __metadata("design:type", Date)
 ], PublicUserInfo.prototype, "updatedAt", void 0);
+__decorate([
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", Boolean)
+], PublicUserInfo.prototype, "actived", void 0);
 //# sourceMappingURL=public-user-info.dto.js.map

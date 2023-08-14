@@ -21,9 +21,9 @@ const passport_1 = require("@nestjs/passport");
 const change_username_dto_1 = require("./dto/change-username.dto");
 const auth_service_1 = require("../auth/auth.service");
 const class_transformer_1 = require("class-transformer");
-const public_user_info_dto_1 = require("./dto/public-user-info.dto");
 const change_email_dto_1 = require("./dto/change-email.dto");
 const change_role_dto_1 = require("./dto/change-role.dto");
+const active_user_guard_1 = require("./active-user-guard");
 let UserController = exports.UserController = class UserController {
     constructor(userService, authService) {
         this.userService = userService;
@@ -33,11 +33,11 @@ let UserController = exports.UserController = class UserController {
         try {
             if (username) {
                 const user = await this.userService.findOneByUsername(username);
-                return res.status(common_1.HttpStatus.OK).send((0, class_transformer_1.plainToClass)(public_user_info_dto_1.PublicUserInfo, user));
+                return res.status(common_1.HttpStatus.OK).send((0, class_transformer_1.plainToClass)(user_entity_1.PublicUserInfo, user));
             }
             else {
                 const users = await this.userService.findAllUsers();
-                return res.status(common_1.HttpStatus.OK).send({ users: (0, class_transformer_1.plainToClass)(public_user_info_dto_1.PublicUserInfo, users) });
+                return res.status(common_1.HttpStatus.OK).send({ users: (0, class_transformer_1.plainToClass)(user_entity_1.PublicUserInfo, users) });
             }
         }
         catch (error) {
@@ -281,7 +281,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "changeRole", null);
 exports.UserController = UserController = __decorate([
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), active_user_guard_1.ActiveUserGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('/users'),
     __metadata("design:paramtypes", [user_service_1.UserService,

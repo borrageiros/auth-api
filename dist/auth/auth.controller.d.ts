@@ -17,6 +17,8 @@ export declare class AuthController {
     constructor(userRepository: Repository<User>, authService: AuthService, userService: UserService, mailService: MailService, jwtStrategy: JwtStrategy);
     register(createUserDto: CreateUserDto, res: any): Promise<any>;
     login(loginUserDto: LoginUserDto, res: any): Promise<any>;
+    verifyEmail(body: any, res: any): Promise<any>;
+    sendVerifyEmail(user: User, res: any): Promise<any>;
     forgotPassword(res: any, forgotPasswordDto: ForgotPasswordDto): Promise<any>;
     resetPassword(res: any, resetPasswordDto: ResetPasswordDto): Promise<any>;
 }

@@ -11,4 +11,10 @@ export declare class User {
     role: UserRole;
     createdAt: Date;
     updatedAt: Date;
+    actived: boolean;
+}
+export declare class PublicUserInfo extends User {
+    password: string;
+    updatedAt: Date;
+    actived: boolean;
 }

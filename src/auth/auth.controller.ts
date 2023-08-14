@@ -43,8 +43,8 @@ export class AuthController {
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 409, description: 'Username or email conflict' })
     async register(@Body() createUserDto: CreateUserDto, @Res() res): Promise<any> {
-        await this.userService.create(createUserDto);
-        return this.authService.login(createUserDto.username, createUserDto.password, res);
+        const user = await this.userService.create(createUserDto);
+        return this.sendVerifyEmail(user, res)
     }
     ////////////////////////
 
@@ -70,6 +70,71 @@ export class AuthController {
     async login(@Body() loginUserDto: LoginUserDto, @Res() res) {
         const result = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password, res);
         return res.status(HttpStatus.OK).send(result);
+    }
+    ////////////////////////
+
+
+
+    //////////////////////// VERIFY EMAIL
+    @Post('/activate-account')
+    @ApiOperation({ summary: 'Verify email to activate the account' })
+    @ApiOkResponse({
+        description: 'Account verified',
+        schema: {
+            type: 'object',
+            properties: {
+                message: {
+                    type: 'string',
+                    example: 'Account verified'
+                }
+            }
+        }
+    })
+    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async verifyEmail(@Body() body, @Res() res): Promise<any> {
+        //
+        //
+        //
+        // AQUI TENEMOS QUE COGER EL TOKEN Y ACTIVAR LA CUENTA
+        //
+        //
+        //
+    }
+    ////////////////////////
+
+
+
+    //////////////////////// SEND EMAIL TO VERIFY THE ACCOUNT
+    @Post('/verify-email')
+    @ApiOperation({ summary: 'Send code account verification to the email' })
+    @ApiOkResponse({
+        description: 'Email sended successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                message: {
+                    type: 'string',
+                    example: 'Email sended successfully'
+                }
+            }
+        }
+    })
+    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async sendVerifyEmail(@Body() user: User, @Res() res): Promise<any> {
+
+        // Generate a reset token using JWT
+        const resetToken = this.authService.generateResetToken(user);
+    
+        // Construct the reset link
+        const resetLink = `${process.env.FRONT_END_URL}/reset-password?token=${resetToken}`;
+    
+        // Send the email with the reset link
+        const emailContent = `To activate your account, please click the following link: \n ${resetLink}`;
+        await this.mailService.sendMail(user.email, process.env.APP_NAME + " | RECOVERY PASSWORD", emailContent);
+    
+        return res.status(HttpStatus.OK).send({ message: ['Email sended successfully'] });
     }
     ////////////////////////
 

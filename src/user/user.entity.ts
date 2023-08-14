@@ -6,6 +6,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 export enum UserRole {
     USER = "user",
@@ -17,7 +18,7 @@ export enum UserRole {
 
 ////////////////// IMPORTANT ///////////////////
 // 
-// All the private Columns will be configured in src/user/dto/public-user-info.dto.ts
+// All the private Columns will be configured in PublicUserInfo
 //
 export class User {
     @PrimaryGeneratedColumn()
@@ -44,4 +45,18 @@ export class User {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column({default: false})
+    actived: boolean;
+}
+
+export class PublicUserInfo extends User {
+    @Exclude()
+    password: string;
+
+    @Exclude()
+    updatedAt: Date;
+
+    @Exclude()
+    actived: boolean;
 }
