@@ -24,12 +24,21 @@ let AuthService = exports.AuthService = class AuthService {
         this.userService = userService;
         this.jwtService = jwtService;
     }
-    generateResetToken(user) {
+    generateResetToken(user, type) {
         const payload = {
             sub: user.id,
             username: user.username,
-            isPasswordReset: true
+            isActivationCode: false,
+            isPasswordReset: false,
         };
+        switch (type) {
+            case "isActivationCode": {
+                payload.isActivationCode = true;
+            }
+            case "isPasswordReset": {
+                payload.isPasswordReset = true;
+            }
+        }
         return this.jwtService.sign(payload, {
             expiresIn: process.env.JWT_TOKEN_PASSWORD_RECOVERY_EXPIRE
         });

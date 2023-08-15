@@ -12,13 +12,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActiveUserGuard = void 0;
 const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
+const class_validator_1 = require("class-validator");
+const user_entity_1 = require("./user.entity");
 let ActiveUserGuard = exports.ActiveUserGuard = class ActiveUserGuard {
     constructor(userService) {
         this.userService = userService;
     }
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
-        const user = await this.userService.findOneByUsername(request.user.username);
+        let user = new user_entity_1.User;
+        if (request.route.path) {
+            if ((0, class_validator_1.isEmail)(request.body.usernameOrEmail)) {
+                user = await this.userService.findOneByEmail(request.body.usernameOrEmail);
+            }
+            else {
+                user = await this.userService.findOneByUsername(request.body.usernameOrEmail);
+            }
+        }
+        else {
+            user = await this.userService.findOneByUsername(request.user.username);
+        }
         if (!user.actived) {
             throw new common_1.ForbiddenException(['Your account is not activated.']);
         }

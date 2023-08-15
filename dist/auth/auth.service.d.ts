@@ -5,7 +5,7 @@ export declare class AuthService {
     private userService;
     private jwtService;
     constructor(userService: UserService, jwtService: JwtService);
-    generateResetToken(user: User): string;
+    generateResetToken(user: User, type: string): string;
     validateUser(usernameOrEmail: string, password: string, res: any): Promise<any>;
     login(usernameOrEmail: string, password: string, res: any): Promise<{
         access_token: string;

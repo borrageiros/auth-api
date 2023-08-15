@@ -18,7 +18,7 @@ export declare class AuthController {
     register(createUserDto: CreateUserDto, res: any): Promise<any>;
     login(loginUserDto: LoginUserDto, res: any): Promise<any>;
     verifyEmail(body: any, res: any): Promise<any>;
-    sendVerifyEmail(user: User, res: any): Promise<any>;
+    sendVerifyEmail(body: any, res: any, tokenType: string): Promise<any>;
     forgotPassword(res: any, forgotPasswordDto: ForgotPasswordDto): Promise<any>;
     resetPassword(res: any, resetPasswordDto: ResetPasswordDto): Promise<any>;
 }

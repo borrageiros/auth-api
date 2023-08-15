@@ -27,6 +27,7 @@ const jwt_strategy_1 = require("./jwt.strategy");
 const bcrypt = require("bcrypt");
 const forgot_password_dto_1 = require("./dto/forgot-password.dto");
 const reset_password_dto_1 = require("./dto/reset-password.dto");
+const active_user_guard_1 = require("../user/active-user-guard");
 let AuthController = exports.AuthController = class AuthController {
     constructor(userRepository, authService, userService, mailService, jwtStrategy) {
         this.userRepository = userRepository;
@@ -37,19 +38,44 @@ let AuthController = exports.AuthController = class AuthController {
     }
     async register(createUserDto, res) {
         const user = await this.userService.create(createUserDto);
-        return this.sendVerifyEmail(user, res);
+        return this.sendVerifyEmail(user, res, "isActivationCode");
     }
     async login(loginUserDto, res) {
         const result = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password, res);
         return res.status(common_1.HttpStatus.OK).send(result);
     }
     async verifyEmail(body, res) {
+        const recoveryCode = body.activateCode;
+        let decoded;
+        try {
+            decoded = await this.jwtStrategy.decode(recoveryCode);
+        }
+        catch (error) {
+            return res.status(common_1.HttpStatus.BAD_REQUEST).send({ message: ['Invalid activation code'] });
+        }
+        if (decoded.isActivationCode === false) {
+            return res.status(common_1.HttpStatus.BAD_REQUEST).send({ message: ['This code is not for activate the account'] });
+        }
+        if (decoded.exp < Math.floor(Date.now() / 1000)) {
+            return res.status(common_1.HttpStatus.BAD_REQUEST).send({ message: ['This code is expired'] });
+        }
+        const user = await this.userService.findOneByUsername(decoded.username);
+        if (!user) {
+            return res.status(common_1.HttpStatus.NOT_FOUND).send({ message: ['Invalid activate code'] });
+        }
+        user.actived = true;
+        await this.userRepository.save(user);
+        return res.status(common_1.HttpStatus.OK).send({ message: ['Account verified'] });
     }
-    async sendVerifyEmail(user, res) {
-        const resetToken = this.authService.generateResetToken(user);
+    async sendVerifyEmail(body, res, tokenType) {
+        const user = await this.userService.findOneByEmail(body.email);
+        if (!tokenType) {
+            tokenType = "isActivationCode";
+        }
+        const resetToken = this.authService.generateResetToken(user, tokenType);
         const resetLink = `${process.env.FRONT_END_URL}/reset-password?token=${resetToken}`;
         const emailContent = `To activate your account, please click the following link: \n ${resetLink}`;
-        await this.mailService.sendMail(user.email, process.env.APP_NAME + " | RECOVERY PASSWORD", emailContent);
+        await this.mailService.sendMail(user.email, process.env.APP_NAME + " | VERIFY ACCOUNT", emailContent);
         return res.status(common_1.HttpStatus.OK).send({ message: ['Email sended successfully'] });
     }
     async forgotPassword(res, forgotPasswordDto) {
@@ -58,7 +84,7 @@ let AuthController = exports.AuthController = class AuthController {
         if (!user) {
             return res.status(common_1.HttpStatus.NOT_FOUND).send({ message: ['User not found with provided email'] });
         }
-        const resetToken = this.authService.generateResetToken(user);
+        const resetToken = this.authService.generateResetToken(user, "isPasswordReset");
         const resetLink = `${process.env.FRONT_END_URL}/reset-password?token=${resetToken}`;
         const emailContent = `To reset your password, please click the following link: \n ${resetLink}`;
         await this.mailService.sendMail(email, process.env.APP_NAME + " | RECOVERY PASSWORD", emailContent);
@@ -116,6 +142,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([
+    (0, common_1.UseGuards)(active_user_guard_1.ActiveUserGuard),
     (0, common_1.Post)('/login'),
     (0, swagger_1.ApiOperation)({ summary: 'Log-in' }),
     (0, swagger_1.ApiOkResponse)({
@@ -155,7 +182,8 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
-    __param(0, (0, common_1.Body)()),
+    (0, swagger_1.ApiQuery)({ name: "activateCode", description: "The code to activate the account", type: String, required: false }),
+    __param(0, (0, common_1.Query)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
@@ -178,10 +206,11 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
-    __param(0, (0, common_1.Body)()),
+    (0, swagger_1.ApiQuery)({ name: "email", description: "Email of the account to verify", type: String, required: false }),
+    __param(0, (0, common_1.Query)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [user_entity_1.User, Object]),
+    __metadata("design:paramtypes", [Object, Object, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "sendVerifyEmail", null);
 __decorate([
