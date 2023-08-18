@@ -68,6 +68,10 @@ __decorate([
 ], PublicUserInfo.prototype, "password", void 0);
 __decorate([
     (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", String)
+], PublicUserInfo.prototype, "email", void 0);
+__decorate([
+    (0, class_transformer_1.Exclude)(),
     __metadata("design:type", Date)
 ], PublicUserInfo.prototype, "updatedAt", void 0);
 __decorate([

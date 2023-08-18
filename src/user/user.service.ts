@@ -5,6 +5,7 @@ import { Like, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class UserService {
@@ -85,6 +86,11 @@ export class UserService {
         return user;
     }
 
+    async deleteOneById(id: number): Promise<void> {
+        const user = await this.findOneById(id);
+        await this.userRepository.remove(user);
+    }    
+
     // SIGN UP
     async create(createUserDto: CreateUserDto): Promise<any> {
         const user = new User();
@@ -99,16 +105,17 @@ export class UserService {
             return user;
         } catch (error) {
             // EL RESTO DE ERRORES SE MANEJAN DESDE EL DTO "./dto/create-user.dto"
-            if (error.code === 'ER_DUP_ENTRY') {
-                if (error.sqlMessage.includes(user.username)) {
-                    throw new ConflictException(['Username already in use']);
-                } else if (error.sqlMessage.includes(user.email)) {
-                    throw new ConflictException(['Email already in use']);
-                } else {
-                    throw new ConflictException(['Duplicate entry']);
-                }
+
+            const duplicateEntry = error.sqlMessage.match(/'([^']+)'/);
+
+            if ( isEmail(duplicateEntry[1]) ) {
+                // Email throw
+                throw new ConflictException([`Email "${duplicateEntry[1]}" already in use`]);
+            } else if ( !isEmail(duplicateEntry[1]) ) {
+                // Username throw
+                throw new ConflictException([`Username "${duplicateEntry[1]}" already in use`]);
             } else {
-                throw new BadRequestException(['Undefined error']);
+                throw new BadRequestException([`Undefined error`]);
             }
         }
     }

@@ -160,7 +160,7 @@ export class AuthController {
         const resetToken = this.authService.generateResetToken(user, tokenType);
         
         // Construct the reset link
-        const resetLink = `${process.env.FRONT_END_URL}/reset-password?token=${resetToken}`;
+        const resetLink = `${process.env.FRONT_END_URL}/activate-account?token=${resetToken}`;
     
         // Send the email with the reset link
         const emailContent = `To activate your account, please click the following link: \n ${resetLink}`;
@@ -268,5 +268,4 @@ export class AuthController {
         return res.status(HttpStatus.OK).send({ message: ['Password reset successfully'] });
     }
     ////////////////////////
-
 }

@@ -55,6 +55,9 @@ export class PublicUserInfo extends User {
     password: string;
 
     @Exclude()
+    email: string;
+
+    @Exclude()
     updatedAt: Date;
 
     @Exclude()

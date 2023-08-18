@@ -18,6 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const bcrypt = require("bcrypt");
 const user_entity_1 = require("./user.entity");
+const class_validator_1 = require("class-validator");
 let UserService = exports.UserService = class UserService {
     constructor(userRepository) {
         this.userRepository = userRepository;
@@ -86,6 +87,10 @@ let UserService = exports.UserService = class UserService {
         await this.userRepository.save(user);
         return user;
     }
+    async deleteOneById(id) {
+        const user = await this.findOneById(id);
+        await this.userRepository.remove(user);
+    }
     async create(createUserDto) {
         const user = new user_entity_1.User();
         user.username = createUserDto.username;
@@ -97,19 +102,15 @@ let UserService = exports.UserService = class UserService {
             return user;
         }
         catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') {
-                if (error.sqlMessage.includes(user.username)) {
-                    throw new common_1.ConflictException(['Username already in use']);
-                }
-                else if (error.sqlMessage.includes(user.email)) {
-                    throw new common_1.ConflictException(['Email already in use']);
-                }
-                else {
-                    throw new common_1.ConflictException(['Duplicate entry']);
-                }
+            const duplicateEntry = error.sqlMessage.match(/'([^']+)'/);
+            if ((0, class_validator_1.isEmail)(duplicateEntry[1])) {
+                throw new common_1.ConflictException([`Email "${duplicateEntry[1]}" already in use`]);
+            }
+            else if (!(0, class_validator_1.isEmail)(duplicateEntry[1])) {
+                throw new common_1.ConflictException([`Username "${duplicateEntry[1]}" already in use`]);
             }
             else {
-                throw new common_1.BadRequestException(['Undefined error']);
+                throw new common_1.BadRequestException([`Undefined error`]);
             }
         }
     }

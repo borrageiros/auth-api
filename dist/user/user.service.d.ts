@@ -13,5 +13,6 @@ export declare class UserService {
     changeUsername(userId: number, newUsername: string): Promise<User>;
     changeEmail(userId: number, newEmail: string): Promise<User>;
     changeRole(userId: number, newRole: UserRole): Promise<User>;
+    deleteOneById(id: number): Promise<void>;
     create(createUserDto: CreateUserDto): Promise<any>;
 }

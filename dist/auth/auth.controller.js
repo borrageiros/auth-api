@@ -73,7 +73,7 @@ let AuthController = exports.AuthController = class AuthController {
             tokenType = "isActivationCode";
         }
         const resetToken = this.authService.generateResetToken(user, tokenType);
-        const resetLink = `${process.env.FRONT_END_URL}/reset-password?token=${resetToken}`;
+        const resetLink = `${process.env.FRONT_END_URL}/activate-account?token=${resetToken}`;
         const emailContent = `To activate your account, please click the following link: \n ${resetLink}`;
         await this.mailService.sendMail(user.email, process.env.APP_NAME + " | VERIFY ACCOUNT", emailContent);
         return res.status(common_1.HttpStatus.OK).send({ message: ['Email sended successfully'] });

@@ -15,6 +15,7 @@ export declare class User {
 }
 export declare class PublicUserInfo extends User {
     password: string;
+    email: string;
     updatedAt: Date;
     actived: boolean;
 }

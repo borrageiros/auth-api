@@ -1,5 +1,5 @@
 // src/user/user.controller.ts
-import { Body, Controller, Post, UseGuards, Request, BadRequestException, UnauthorizedException, Res, HttpStatus, ConflictException, Get, Query, ForbiddenException, Patch, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Request, BadRequestException, UnauthorizedException, Res, HttpStatus, ConflictException, Get, Query, ForbiddenException, Patch, NotFoundException, Delete } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User, UserRole, PublicUserInfo } from './user.entity';
 import { ApiTags, ApiResponse, ApiOperation, ApiBearerAuth, ApiOkResponse, ApiQuery } from '@nestjs/swagger';
@@ -10,6 +10,7 @@ import { plainToClass } from 'class-transformer';
 import { ChangeEmailDto } from './dto/change-email.dto';
 import { ChangeRoleDto } from './dto/change-role.dto';
 import { ActiveUserGuard } from './active-user-guard';
+import { MailService } from 'src/auth/mail.service';
 
 @UseGuards(AuthGuard('jwt'), ActiveUserGuard) // Check JwtToken (auth) and check if the user is activated
 @ApiBearerAuth()
@@ -17,14 +18,15 @@ import { ActiveUserGuard } from './active-user-guard';
 export class UserController {
     constructor(
         private userService: UserService,
-        private authService: AuthService
+        private authService: AuthService,
+        private mailService: MailService,
     ) { }
 
 
 
     //////////////////////// GET ONE USER (PUBLIC INFO)
     @Get()
-    @ApiTags('Users')
+    @ApiTags('User')
     @ApiOperation({ summary: 'Get a specific user by username or all users if no username provided (Public Info)' })
     @ApiQuery({ name: "username", description: "The username to search for.", type: String, required: false})
     @ApiResponse({ status: 200, description: 'User public info (Object or Array)' })
@@ -50,14 +52,45 @@ export class UserController {
 
     //////////////////////// GET USER PROFILE FOR CONNECTED USER (PRIVATE INFO)
     @Get("/profile")
-    @ApiTags('Users')
+    @ApiTags('User')
     @ApiOperation({ summary: 'Get user profile by connected user (Private/All Info)' })
     @ApiResponse({ status: 200, description: 'User all info (Object)' })
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     async getUserByToken( @Res() res, @Request() req ) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
         return res.status(HttpStatus.OK).send(connectedUser);
+    }
+    ////////////////////////
+
+
+
+    //////////////////////// DELETE USER
+    @Delete('/profile')
+    @ApiTags('User')
+    @ApiOperation({ summary: 'Delete user account' })
+    @ApiOkResponse({
+        description: 'User deleted successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                message: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        example: 'User deleted successfully'
+                    }
+                }
+            }
+        }
+    })
+    @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Not found' })
+    async delete( @Res() res, @Request() req ) {
+        const result = await this.userService.deleteOneById(req.user.userId);
+        return res.status(HttpStatus.OK).send({ message: "User deleted successfully" });
     }
     ////////////////////////
 
@@ -65,7 +98,7 @@ export class UserController {
 
     //////////////////////// GET USERS
     @Get('/search')
-    @ApiTags('Users')
+    @ApiTags('User')
     @ApiOperation({ summary: 'Get a list of users by username or email, case insensitive and use the function LIKE from mysql ' })
     @ApiOkResponse({
         description: 'List of usernames matching the search term',
@@ -108,7 +141,7 @@ export class UserController {
 
     //////////////////////// CHANGE USERNAME
     @Patch('/change-username')
-    @ApiTags('Users')
+    @ApiTags('User')
     @ApiOperation({ summary: 'Change username' })
     @ApiOkResponse({
         description: 'Username changed successfully',
@@ -127,9 +160,10 @@ export class UserController {
     })
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     @ApiResponse({ status: 409, description: 'Conflict' })
     async changeUsername(@Request() req, @Body() changeUsernameDto: ChangeUsernameDto, @Res() res) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
 
         const newUsername = changeUsernameDto.newUsername;
         if (!newUsername) {
@@ -159,7 +193,7 @@ export class UserController {
 
     //////////////////////// CHANGE EMAIL
     @Patch('/change-email')
-    @ApiTags('Users')
+    @ApiTags('User')
     @ApiOperation({ summary: 'Change email' })
     @ApiOkResponse({
         description: 'Email changed successfully',
@@ -178,9 +212,10 @@ export class UserController {
     })
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Not found' })
     @ApiResponse({ status: 409, description: 'Conflict' })
     async changeEmail(@Request() req, @Body() changeEmailDto: ChangeEmailDto, @Res() res) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
 
         //Check password
         const user = await this.authService.validateUser(connectedUser.username, changeEmailDto.password, res)
@@ -196,6 +231,20 @@ export class UserController {
                 throw new ConflictException(['Email already in use']);
             }
         }
+
+        //
+        //
+        //
+        //
+        //
+        // TO DO
+        // CHANGE ACTIVED ACCOUNT TO FALSE AND RESEND EMAIL VERIFY
+        //
+        //
+        //
+        //
+        //
+        //
 
         return res.status(HttpStatus.OK).send({ message: ['Email changed successfully'] });
     }
@@ -230,7 +279,7 @@ export class UserController {
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Not found' })
     async changeRole(@Request() req, @Body() changeRoleDto: ChangeRoleDto, @Res() res) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
         
         let userToChange: User;     
     

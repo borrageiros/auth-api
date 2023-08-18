@@ -24,10 +24,12 @@ const class_transformer_1 = require("class-transformer");
 const change_email_dto_1 = require("./dto/change-email.dto");
 const change_role_dto_1 = require("./dto/change-role.dto");
 const active_user_guard_1 = require("./active-user-guard");
+const mail_service_1 = require("../auth/mail.service");
 let UserController = exports.UserController = class UserController {
-    constructor(userService, authService) {
+    constructor(userService, authService, mailService) {
         this.userService = userService;
         this.authService = authService;
+        this.mailService = mailService;
     }
     async getUserByUsername(res, username) {
         try {
@@ -45,8 +47,12 @@ let UserController = exports.UserController = class UserController {
         }
     }
     async getUserByToken(res, req) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
         return res.status(common_1.HttpStatus.OK).send(connectedUser);
+    }
+    async delete(res, req) {
+        const result = await this.userService.deleteOneById(req.user.userId);
+        return res.status(common_1.HttpStatus.OK).send({ message: "User deleted successfully" });
     }
     async searchUsersByUsername(res, username, email) {
         let users = [];
@@ -65,7 +71,7 @@ let UserController = exports.UserController = class UserController {
         }
     }
     async changeUsername(req, changeUsernameDto, res) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
         const newUsername = changeUsernameDto.newUsername;
         if (!newUsername) {
             throw new common_1.BadRequestException(['A new username must be provided.']);
@@ -85,7 +91,7 @@ let UserController = exports.UserController = class UserController {
         return res.status(common_1.HttpStatus.OK).send({ message: ['Username changed successfully'] });
     }
     async changeEmail(req, changeEmailDto, res) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
         const user = await this.authService.validateUser(connectedUser.username, changeEmailDto.password, res);
         if (!user) {
             throw new common_1.UnauthorizedException(['Incorrect password']);
@@ -101,7 +107,7 @@ let UserController = exports.UserController = class UserController {
         return res.status(common_1.HttpStatus.OK).send({ message: ['Email changed successfully'] });
     }
     async changeRole(req, changeRoleDto, res) {
-        const connectedUser = await this.userService.findOneById(req.user.id);
+        const connectedUser = await this.userService.findOneById(req.user.userId);
         let userToChange;
         try {
             if (!isNaN(Number(changeRoleDto.userOrIdToChange))) {
@@ -135,7 +141,7 @@ let UserController = exports.UserController = class UserController {
 };
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiTags)('Users'),
+    (0, swagger_1.ApiTags)('User'),
     (0, swagger_1.ApiOperation)({ summary: 'Get a specific user by username or all users if no username provided (Public Info)' }),
     (0, swagger_1.ApiQuery)({ name: "username", description: "The username to search for.", type: String, required: false }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User public info (Object or Array)' }),
@@ -150,11 +156,12 @@ __decorate([
 ], UserController.prototype, "getUserByUsername", null);
 __decorate([
     (0, common_1.Get)("/profile"),
-    (0, swagger_1.ApiTags)('Users'),
+    (0, swagger_1.ApiTags)('User'),
     (0, swagger_1.ApiOperation)({ summary: 'Get user profile by connected user (Private/All Info)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User all info (Object)' }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Not found' }),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -162,8 +169,36 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "getUserByToken", null);
 __decorate([
+    (0, common_1.Delete)('/profile'),
+    (0, swagger_1.ApiTags)('User'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete user account' }),
+    (0, swagger_1.ApiOkResponse)({
+        description: 'User deleted successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                message: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        example: 'User deleted successfully'
+                    }
+                }
+            }
+        }
+    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Not found' }),
+    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "delete", null);
+__decorate([
     (0, common_1.Get)('/search'),
-    (0, swagger_1.ApiTags)('Users'),
+    (0, swagger_1.ApiTags)('User'),
     (0, swagger_1.ApiOperation)({ summary: 'Get a list of users by username or email, case insensitive and use the function LIKE from mysql ' }),
     (0, swagger_1.ApiOkResponse)({
         description: 'List of usernames matching the search term',
@@ -194,7 +229,7 @@ __decorate([
 ], UserController.prototype, "searchUsersByUsername", null);
 __decorate([
     (0, common_1.Patch)('/change-username'),
-    (0, swagger_1.ApiTags)('Users'),
+    (0, swagger_1.ApiTags)('User'),
     (0, swagger_1.ApiOperation)({ summary: 'Change username' }),
     (0, swagger_1.ApiOkResponse)({
         description: 'Username changed successfully',
@@ -213,6 +248,7 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Not found' }),
     (0, swagger_1.ApiResponse)({ status: 409, description: 'Conflict' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
@@ -223,7 +259,7 @@ __decorate([
 ], UserController.prototype, "changeUsername", null);
 __decorate([
     (0, common_1.Patch)('/change-email'),
-    (0, swagger_1.ApiTags)('Users'),
+    (0, swagger_1.ApiTags)('User'),
     (0, swagger_1.ApiOperation)({ summary: 'Change email' }),
     (0, swagger_1.ApiOkResponse)({
         description: 'Email changed successfully',
@@ -242,6 +278,7 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Not found' }),
     (0, swagger_1.ApiResponse)({ status: 409, description: 'Conflict' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
@@ -285,6 +322,7 @@ exports.UserController = UserController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('/users'),
     __metadata("design:paramtypes", [user_service_1.UserService,
-        auth_service_1.AuthService])
+        auth_service_1.AuthService,
+        mail_service_1.MailService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map
