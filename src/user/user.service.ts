@@ -17,7 +17,7 @@ export class UserService {
         return this.userRepository.find();
     }    
 
-    async findOneById(id: number): Promise<User> {
+    async findOneById(id: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
             throw new NotFoundException([`No user found with ID ${id}`]);
@@ -65,28 +65,28 @@ export class UserService {
         return {users: users.map(user => user.username) };
     }
 
-    async changeUsername(userId: number, newUsername: string): Promise<User> {
+    async changeUsername(userId: string, newUsername: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         user.username = newUsername;
         await this.userRepository.save(user);
         return user;
     }
 
-    async changeEmail(userId: number, newEmail: string): Promise<User> {
+    async changeEmail(userId: string, newEmail: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         user.email = newEmail;
         await this.userRepository.save(user);
         return user;
     }
 
-    async changeRole(userId: number, newRole: UserRole): Promise<User> {
+    async changeRole(userId: string, newRole: UserRole): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         user.role = newRole;
         await this.userRepository.save(user);
         return user;
     }
 
-    async deleteOneById(id: number): Promise<void> {
+    async deleteOneById(id: string): Promise<void> {
         const user = await this.findOneById(id);
         await this.userRepository.remove(user);
     }    

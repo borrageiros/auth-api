@@ -21,8 +21,8 @@ export enum UserRole {
 // All the private Columns will be configured in PublicUserInfo
 //
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({ unique: true, length: 50 })
     username: string;

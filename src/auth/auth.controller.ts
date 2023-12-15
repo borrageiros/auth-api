@@ -95,7 +95,7 @@ export class AuthController {
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 404, description: 'User not found' })
     @ApiQuery({ name: "activateCode", description: "The code to activate the account", type: String, required: false})
-    async verifyEmail(@Query() body, @Res() res): Promise<any> {
+    async verifyEmail(@Body() body, @Res() res): Promise<any> {
         const recoveryCode = body.activateCode;
 
         // Verify jwtToken
@@ -149,7 +149,7 @@ export class AuthController {
     @ApiResponse({ status: 400, description: 'Bad request' })
     @ApiResponse({ status: 404, description: 'User not found' })
     @ApiQuery({ name: "email", description: "Email of the account to verify", type: String, required: false})
-    async sendVerifyEmail(@Query() body, @Res() res, tokenType: string): Promise<any> {
+    async sendVerifyEmail(@Body() body, @Res() res, tokenType: string): Promise<any> {
         const user = await this.userService.findOneByEmail(body.email);
 
         if (!tokenType){

@@ -285,7 +285,7 @@ export class UserController {
     
         try {
             if (!isNaN(Number(changeRoleDto.userOrIdToChange))) {
-                userToChange = await this.userService.findOneById(Number(changeRoleDto.userOrIdToChange));
+                userToChange = await this.userService.findOneById(changeRoleDto.userOrIdToChange);
             } else {
                 userToChange = await this.userService.findOneByUsername(changeRoleDto.userOrIdToChange);
             }            
