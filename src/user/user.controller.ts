@@ -11,12 +11,15 @@ import { ChangeEmailDto } from './dto/change-email.dto';
 import { ChangeRoleDto } from './dto/change-role.dto';
 import { ActiveUserGuard } from './active-user-guard';
 import { MailService } from 'src/auth/mail.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @UseGuards(AuthGuard('jwt'), ActiveUserGuard) // Check JwtToken (auth) and check if the user is activated
 @ApiBearerAuth()
 @Controller('/users')
 export class UserController {
     constructor(
+        @InjectRepository(User) private userRepository: Repository<User>,
         private userService: UserService,
         private authService: AuthService,
         private mailService: MailService,
@@ -218,33 +221,29 @@ export class UserController {
         const connectedUser = await this.userService.findOneById(req.user.userId);
 
         //Check password
-        const user = await this.authService.validateUser(connectedUser.username, changeEmailDto.password, res)
+        let user = await this.authService.validateUser(connectedUser.username, changeEmailDto.password, res)
         if (!user) {
             throw new UnauthorizedException(['Incorrect password']);
         }
 
         // Check if email exist and change it
         try {
-            await this.userService.changeEmail( connectedUser.id, changeEmailDto.newEmail );
+            user = await this.userService.changeEmail( connectedUser.id, changeEmailDto.newEmail );
         } catch (error) {
             if (error.sqlMessage.includes(changeEmailDto.newEmail)) {
                 throw new ConflictException(['Email already in use']);
             }
         }
 
-        //
-        //
-        //
-        //
-        //
-        // TO DO
-        // CHANGE ACTIVED ACCOUNT TO FALSE AND RESEND EMAIL VERIFY
-        //
-        //
-        //
-        //
-        //
-        //
+        // Send email verification
+        const resetToken = this.authService.generateResetToken(user, "isActivationCode");
+        const resetLink = `${process.env.FRONT_END_URL}/activate-account?token=${resetToken}`;
+        const emailContent = `To activate your account, please click the following link: \n ${resetLink}`;
+        await this.mailService.sendMail( changeEmailDto.newEmail, process.env.APP_NAME + " | VERIFY ACCOUNT", emailContent );
+
+        // Desactivate the user
+        user.actived = false;
+        await this.userRepository.save(user);
 
         return res.status(HttpStatus.OK).send({ message: ['Email changed successfully'] });
     }
