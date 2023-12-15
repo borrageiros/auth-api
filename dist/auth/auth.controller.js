@@ -28,7 +28,7 @@ const bcrypt = require("bcrypt");
 const forgot_password_dto_1 = require("./dto/forgot-password.dto");
 const reset_password_dto_1 = require("./dto/reset-password.dto");
 const active_user_guard_1 = require("../user/active-user-guard");
-let AuthController = exports.AuthController = class AuthController {
+let AuthController = class AuthController {
     constructor(userRepository, authService, userService, mailService, jwtStrategy) {
         this.userRepository = userRepository;
         this.authService = authService;
@@ -73,7 +73,7 @@ let AuthController = exports.AuthController = class AuthController {
             tokenType = "isActivationCode";
         }
         const resetToken = this.authService.generateResetToken(user, tokenType);
-        const resetLink = `${process.env.FRONT_END_URL}/activate-account?token=${resetToken}`;
+        const resetLink = `${process.env.FRONT_END_URL}/auth/activate-account?activateCode=${resetToken}`;
         const emailContent = `To activate your account, please click the following link: \n ${resetLink}`;
         await this.mailService.sendMail(user.email, process.env.APP_NAME + " | VERIFY ACCOUNT", emailContent);
         return res.status(common_1.HttpStatus.OK).send({ message: ['Email sended successfully'] });
@@ -118,6 +118,7 @@ let AuthController = exports.AuthController = class AuthController {
         return res.status(common_1.HttpStatus.OK).send({ message: ['Password reset successfully'] });
     }
 };
+exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Post)('/register'),
     (0, swagger_1.ApiOperation)({ summary: 'Register a user' }),
@@ -166,7 +167,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
-    (0, common_1.Post)('/activate-account'),
+    (0, common_1.Get)('/activate-account'),
     (0, swagger_1.ApiOperation)({ summary: 'Verify email to activate the account' }),
     (0, swagger_1.ApiOkResponse)({
         description: 'Account verified',

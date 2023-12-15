@@ -14,7 +14,7 @@ const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
 const class_validator_1 = require("class-validator");
 const user_entity_1 = require("./user.entity");
-let ActiveUserGuard = exports.ActiveUserGuard = class ActiveUserGuard {
+let ActiveUserGuard = class ActiveUserGuard {
     constructor(userService) {
         this.userService = userService;
     }
@@ -38,6 +38,7 @@ let ActiveUserGuard = exports.ActiveUserGuard = class ActiveUserGuard {
         return true;
     }
 };
+exports.ActiveUserGuard = ActiveUserGuard;
 exports.ActiveUserGuard = ActiveUserGuard = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [user_service_1.UserService])

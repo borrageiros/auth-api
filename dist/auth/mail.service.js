@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MailService = void 0;
 const common_1 = require("@nestjs/common");
 const nodemailer = require("nodemailer");
-let MailService = exports.MailService = class MailService {
+let MailService = class MailService {
     constructor() {
         this.transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
@@ -33,6 +33,7 @@ let MailService = exports.MailService = class MailService {
         });
     }
 };
+exports.MailService = MailService;
 exports.MailService = MailService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [])

@@ -14,8 +14,9 @@ const dotenv_1 = require("dotenv");
 const auth_module_1 = require("./auth/auth.module");
 const user_entity_1 = require("./user/user.entity");
 const user_module_1 = require("./user/user.module");
-let AppModule = exports.AppModule = class AppModule {
+let AppModule = class AppModule {
 };
+exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [

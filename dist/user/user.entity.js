@@ -18,8 +18,9 @@ var UserRole;
     UserRole["ADMIN"] = "admin";
     UserRole["ROOT"] = "root";
 })(UserRole || (exports.UserRole = UserRole = {}));
-let User = exports.User = class User {
+let User = class User {
 };
+exports.User = User;
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)

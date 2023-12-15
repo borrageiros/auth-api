@@ -16,8 +16,9 @@ const jwt_strategy_1 = require("./jwt.strategy");
 const mail_service_1 = require("./mail.service");
 const typeorm_1 = require("@nestjs/typeorm");
 const user_entity_1 = require("../user/user.entity");
-let AuthModule = exports.AuthModule = class AuthModule {
+let AuthModule = class AuthModule {
 };
+exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [

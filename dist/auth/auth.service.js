@@ -19,7 +19,7 @@ const bcrypt = require("bcrypt");
 const user_service_1 = require("../user/user.service");
 const user_entity_1 = require("../user/user.entity");
 const class_validator_1 = require("class-validator");
-let AuthService = exports.AuthService = class AuthService {
+let AuthService = class AuthService {
     constructor(userService, jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;
@@ -70,6 +70,7 @@ let AuthService = exports.AuthService = class AuthService {
         };
     }
 };
+exports.AuthService = AuthService;
 __decorate([
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),

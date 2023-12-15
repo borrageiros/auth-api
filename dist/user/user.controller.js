@@ -25,7 +25,7 @@ const change_email_dto_1 = require("./dto/change-email.dto");
 const change_role_dto_1 = require("./dto/change-role.dto");
 const active_user_guard_1 = require("./active-user-guard");
 const mail_service_1 = require("../auth/mail.service");
-let UserController = exports.UserController = class UserController {
+let UserController = class UserController {
     constructor(userService, authService, mailService) {
         this.userService = userService;
         this.authService = authService;
@@ -139,6 +139,7 @@ let UserController = exports.UserController = class UserController {
         return res.status(common_1.HttpStatus.OK).send({ message: ['Role updated to ' + userToChange.role + ' for ' + userToChange.username] });
     }
 };
+exports.UserController = UserController;
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiTags)('User'),
