@@ -40,13 +40,22 @@ export class UserController {
         try {
             if (username) {
                 const user = await this.userService.findOneByUsername(username);
-                return res.status(HttpStatus.OK).send(plainToClass(PublicUserInfo, user));
+                return res.status(HttpStatus.OK).send({
+                    message: [plainToClass(PublicUserInfo, user)],
+                    error: "",
+                    statusCode: 200
+                });
             } else {
                 const users = await this.userService.findAllUsers();
-                return res.status(HttpStatus.OK).send({users: plainToClass(PublicUserInfo, users)});
+                return res.status(HttpStatus.OK).send({
+                    message: { users: plainToClass(PublicUserInfo, users)},
+                    error: "",
+                    statusCode: 200
+                });
             }
         } catch (error) {
-            return res.status(HttpStatus.NOT_FOUND).send({ message: error.message });
+            throw new NotFoundException(["User not found"]);
+
         }
     }    
     ////////////////////////
@@ -63,7 +72,11 @@ export class UserController {
     @ApiResponse({ status: 404, description: 'Not found' })
     async getUserByToken( @Res() res, @Request() req ) {
         const connectedUser = await this.userService.findOneById(req.user.userId);
-        return res.status(HttpStatus.OK).send(connectedUser);
+        return res.status(HttpStatus.OK).send({
+            message: connectedUser,
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 
@@ -93,7 +106,11 @@ export class UserController {
     @ApiResponse({ status: 404, description: 'Not found' })
     async delete( @Res() res, @Request() req ) {
         const result = await this.userService.deleteOneById(req.user.userId);
-        return res.status(HttpStatus.OK).send({ message: "User deleted successfully" });
+        return res.status(HttpStatus.OK).send({
+            message:  "User deleted successfully",
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 
@@ -127,14 +144,22 @@ export class UserController {
         let users = []
         try{
             users = await this.userService.findUsersByEmail(email);
-            return res.status(HttpStatus.OK).send(users);
+            return res.status(HttpStatus.OK).send({
+                message:  users,
+                error: "",
+                statusCode: 200
+            });
         }catch {
             try {
                 users = await this.userService.findUsersByUsername(username);
             } catch (error) {
-                return res.status(HttpStatus.NOT_FOUND).send({ message: error.message });
+                throw new NotFoundException([error.message]);
             }
-            return res.status(HttpStatus.OK).send(users);
+            return res.status(HttpStatus.OK).send({
+                message:  users,
+                error: "",
+                statusCode: 200
+            });
         }
 
     }
@@ -188,7 +213,11 @@ export class UserController {
             }
         }
 
-        return res.status(HttpStatus.OK).send({ message: ['Username changed successfully'] });
+        return res.status(HttpStatus.OK).send({
+            message:  ['Username changed successfully'],
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 
@@ -245,7 +274,11 @@ export class UserController {
         user.actived = false;
         await this.userRepository.save(user);
 
-        return res.status(HttpStatus.OK).send({ message: ['Email changed successfully'] });
+        return res.status(HttpStatus.OK).send({
+            message:  ['Email changed successfully'],
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 
@@ -289,7 +322,7 @@ export class UserController {
                 userToChange = await this.userService.findOneByUsername(changeRoleDto.userOrIdToChange);
             }            
         } catch (error) {
-            return res.status(HttpStatus.NOT_FOUND).send({ message: ['User not found'] });
+            throw new NotFoundException(['User not found']);
         }
     
         switch (connectedUser.role) {
@@ -301,16 +334,20 @@ export class UserController {
                 if (userToChange.role !== UserRole.ROOT) {
                     userToChange.role = changeRoleDto.newRole;
                 } else {
-                    return res.status(HttpStatus.FORBIDDEN).send({ message: ["Admins cannot change the role of a root user"] });
+                    throw new ForbiddenException(["Admins cannot change the role of a root user"]);
                 }
                 break;
     
             case UserRole.USER:
-                return res.status(HttpStatus.FORBIDDEN).send({ message: ['You do not have permission to perform this action'] });
+                throw new ForbiddenException(['You do not have permission to perform this action']);
         }
     
         await this.userService.changeRole(userToChange.id, changeRoleDto.newRole);
-        return res.status(HttpStatus.OK).send({ message: ['Role updated to ' + userToChange.role + ' for ' + userToChange.username] });
+        return res.status(HttpStatus.OK).send({
+            message:  ['Role updated to ' + userToChange.role + ' for ' + userToChange.username],
+            error: "",
+            statusCode: 200
+        });
     }
     
 }

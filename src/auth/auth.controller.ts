@@ -1,5 +1,5 @@
 // src/auth/auth.controller.ts
-import { Controller, Body, Post, HttpStatus, Res, Patch, Query, UseGuards } from '@nestjs/common';
+import { Controller, Body, Post, HttpStatus, Res, Patch, Query, UseGuards, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiResponse, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiQuery, ApiParam, ApiProperty } from '@nestjs/swagger';
 import { UserService } from 'src/user/user.service';
@@ -68,10 +68,15 @@ export class AuthController {
         }
     })
     @ApiResponse({ status: 400, description: 'Bad request' })
+    @ApiResponse({ status: 401, description: 'Incorrect password' })
     @ApiResponse({ status: 404, description: 'No user found with username or email' })
     async login(@Body() loginUserDto: LoginUserDto, @Res() res) {
-        const result = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password, res);
-        return res.status(HttpStatus.OK).send(result);
+        const data = await this.authService.login(loginUserDto.usernameOrEmail, loginUserDto.password, res);
+        return res.status(HttpStatus.OK).send({
+            message: data,
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 
@@ -97,35 +102,41 @@ export class AuthController {
     @ApiQuery({ name: "activateCode", description: "The code to activate the account", type: String, required: false})
     async verifyEmail(@Body() body, @Res() res): Promise<any> {
         const recoveryCode = body.activateCode;
+        console.log("🔴 - auth.controller.ts::103 - recoveryCode ->", recoveryCode);
 
         // Verify jwtToken
         let decoded;
         try {
             decoded = await this.jwtStrategy.decode(recoveryCode);
         } catch (error) {
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: ['Invalid activation code'] });
+            throw new BadRequestException(['Invalid activation code']);
         }
 
         // Check token type
         if (decoded.isActivationCode === false) {
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: ['This code is not for activate the account'] });
+            throw new BadRequestException(['This code is not for activate the account']);
         }
 
         // Check if token is expired
         if (decoded.exp < Math.floor(Date.now() / 1000)) {
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: ['This code is expired'] });
+            throw new BadRequestException(['This code is expired']);
+
         }
 
         const user = await this.userService.findOneByUsername(decoded.username);
         if (!user) {
-            return res.status(HttpStatus.NOT_FOUND).send({ message: ['Invalid activate code'] });
+            throw new NotFoundException(['Invalid activate code']);
         }
 
         // Activate the user
         user.actived = true;
         await this.userRepository.save(user);
 
-        return res.status(HttpStatus.OK).send({ message: ['Account verified'] });
+        return res.status(HttpStatus.OK).send({
+            message: ['Account verified'],
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 
@@ -165,8 +176,12 @@ export class AuthController {
         // Send the email with the reset link
         const emailContent = `To activate your account, please click the following link: \n ${resetLink}`;
         await this.mailService.sendMail( user.email, process.env.APP_NAME + " | VERIFY ACCOUNT", emailContent );
-    
-        return res.status(HttpStatus.OK).send({ message: ['Email sended successfully'] });
+
+        return res.status(HttpStatus.OK).send({
+            message: ['Email sended successfully'],
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 
@@ -195,7 +210,7 @@ export class AuthController {
         // Check if email exists
         const user = await this.userService.findOneByEmail(email);
         if (!user) {
-            return res.status(HttpStatus.NOT_FOUND).send({ message: ['User not found with provided email'] });
+            throw new NotFoundException(['User not found with provided email']);
         }
     
         // Generate a reset token using JWT
@@ -207,8 +222,12 @@ export class AuthController {
         // Send the email with the reset link
         const emailContent = `To reset your password, please click the following link: \n ${resetLink}`;
         await this.mailService.sendMail(email, process.env.APP_NAME + " | RECOVERY PASSWORD", emailContent);
-    
-        return res.status(HttpStatus.OK).send({ message: ['Email sended successfully'] });
+
+        return res.status(HttpStatus.OK).send({
+            message: ['Email sended successfully'],
+            error: "",
+            statusCode: 200
+        });
     }      
     ////////////////////////
 
@@ -234,7 +253,7 @@ export class AuthController {
         const { recoveryCode, newPassword, confirmPassword } = resetPasswordDto;
 
         if (newPassword !== confirmPassword) {
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: ['New password and confirm password do not match'] });
+            throw new BadRequestException(['New password and confirm password do not match']);
         }
 
         // Verify jwtToken
@@ -242,22 +261,22 @@ export class AuthController {
         try {
             decoded = await this.jwtStrategy.decode(recoveryCode);
         } catch (error) {
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: ['Invalid recovery code'] });
+            throw new BadRequestException(['Invalid recovery code']);
         }
 
         // Check token type
         if (decoded.isPasswordReset === false) {
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: ['This code is not for password resetting'] });
+            throw new BadRequestException(['This code is not for password resetting']);
         }
 
         // Check if token is expired
         if (decoded.exp < Math.floor(Date.now() / 1000)) {
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: ['This code is expired'] });
+            throw new BadRequestException(['This code is expired']);
         }
 
         const user = await this.userService.findOneByUsername(decoded.username);
         if (!user) {
-            return res.status(HttpStatus.NOT_FOUND).send({ message: ['Invalid recovery code'] });
+            throw new BadRequestException(['Invalid recovery code']);
         }
 
         // Update password
@@ -265,7 +284,11 @@ export class AuthController {
         user.password = await bcrypt.hash(newPassword, salt);
         await this.userRepository.save(user);
 
-        return res.status(HttpStatus.OK).send({ message: ['Password reset successfully'] });
+        return res.status(HttpStatus.OK).send({
+            message: ['Password reset successfully'],
+            error: "",
+            statusCode: 200
+        });
     }
     ////////////////////////
 }

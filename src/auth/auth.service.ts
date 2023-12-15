@@ -1,5 +1,5 @@
 // src/auth/auth.service.ts
-import { HttpStatus, Injectable, Res, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException, Res, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
@@ -47,7 +47,7 @@ export class AuthService {
         }
 
         if (!user){
-            return res.status(HttpStatus.NOT_FOUND).send({ message: ['User not found'] });
+            throw new NotFoundException(['User not found']);
         }
 
         // Check password
