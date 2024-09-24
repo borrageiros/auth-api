@@ -13,12 +13,13 @@ export class AuthService {
         private jwtService: JwtService,
     ) { }
 
-    generateResetToken(user: User, type: string): string {
+    generateResetToken(user: User, type: string, redirectUrl: string): string {
         const payload = {
             sub: user.id,
             username: user.username,
             isActivationCode: false,
             isPasswordReset: false,
+            redirectUrl: redirectUrl ? redirectUrl : ""
         };
 
         switch (type){
@@ -63,6 +64,10 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException(['Incorrect password']);
         }
+        if (user.active === false) {
+            throw new UnauthorizedException(['Your account is not activated.']);
+        }
+
         const payload = { username: user.username, sub: user.id };
         return {
             access_token: this.jwtService.sign(payload),

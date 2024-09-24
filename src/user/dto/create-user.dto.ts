@@ -1,5 +1,5 @@
 // src/user/dto/create-user.dto.ts
-import { IsEmail, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, MaxLength, MinLength, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
@@ -17,5 +17,10 @@ export class CreateUserDto {
   @ApiProperty()
   @IsNotEmpty()
   @MinLength(4)
+  @MaxLength(50)
   password: string;
+
+  @ApiProperty()
+  @IsUrl()
+  redirectUrl: string;
 }

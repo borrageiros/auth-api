@@ -11,5 +11,6 @@ export class ChangeUsernameDto {
   @ApiProperty()
   @IsNotEmpty()
   @MinLength(4)
+  @MaxLength(50)
   password: string;
 }

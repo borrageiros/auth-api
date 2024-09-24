@@ -15,7 +15,15 @@ export class UserService {
 
     async findAllUsers(): Promise<User[]> {
         return this.userRepository.find();
-    }    
+    }
+
+    async findUsers(startIndex: number, count: number): Promise<User[]> {
+        const users = await this.userRepository.find({
+            skip: startIndex - 1,
+            take: count,
+        });
+        return users;
+    }
 
     async findOneById(id: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
@@ -72,6 +80,14 @@ export class UserService {
         return user;
     }
 
+    async changePassword(userId: string, newPassword: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        const salt = await bcrypt.genSalt();
+        user.password = await bcrypt.hash(newPassword, salt);
+        await this.userRepository.save(user);
+        return user;
+    }
+
     async changeEmail(userId: string, newEmail: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         user.email = newEmail;
@@ -82,6 +98,13 @@ export class UserService {
     async changeRole(userId: string, newRole: UserRole): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         user.role = newRole;
+        await this.userRepository.save(user);
+        return user;
+    }
+
+    async changeActived(userId: string, actived: boolean): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        user.actived = actived;
         await this.userRepository.save(user);
         return user;
     }
